@@ -12,7 +12,6 @@ from deepsearcher.online_query import query
 # 导入 deepsearcher 库的离线数据加载函数 (本地文件和网页爬取)
 from deepsearcher.offline_loading import load_from_local_files, load_from_website
 
-
 # --- JSON 响应清洗函数 ---
 def clean_json_response(raw_response: str) -> dict:
     """
@@ -50,8 +49,8 @@ def clean_json_response(raw_response: str) -> dict:
 # 创建 Configuration 类的实例，用于管理DeepSearcher的所有设置
 config = Configuration()
 
-# 配置大语言模型 (LLM)
-config.set_provider_config("llm", "DeepSeek", {"model": "deepseek-reasoner"})
+# 配置大语言模型 (LLM)，用的chat速度更快
+config.set_provider_config("llm", "DeepSeek", {"model": "deepseek-chat"})
 
 # 配置 Embedding 模型 (将文本转换为向量的模型)
 config.set_provider_config("embedding", "FastEmbedEmbedding", {"model": "intfloat/multilingual-e5-large"})
@@ -73,7 +72,7 @@ init_config(config=config)
 # 选项 A: 从 xTool 官网加载数据 (推荐，如果 FireCrawl Key 可用)
 print("--- 正在加载 xTool 官网数据 ---")
 xtool_website_urls = [
-    # 商品
+    # 商品，可以用P和F系列的商品进行测试
     # P系列
     "https://www.xtool.com/products/xtool-p2-55w-co2-laser-cutter",
     "https://www.xtool.com/products/ultimate-productive-business-duo",
@@ -93,12 +92,30 @@ else:
     print("警告：未检测到 FIRECRAWL_API_KEY。跳过网站爬取。")
     print("如果您想从官网获取最新信息，请设置 FIRECRAWL_API_KEY。")
 
+# embedding 分块时间太长，省略
+# # 选项 B: 从本地文件加载数据 (加载你的 xTool 品牌手册 PDF 或其他本地文档)
+# print("\n--- 正在加载本地文件数据 ---")
+# # 确保 'xTool品牌手册.pdf' 文件放在你的 PyCharm 项目的根目录下
+# # 或者指定包含该文件的目录路径，例如：
+# # xtool_local_docs_path = "C:/Users/YourUser/Documents/xTool_Docs/"
+# # load_from_local_files(paths_or_directory=xtool_local_docs_path)
+#
+# # 假设你的 PDF 在当前项目根目录
+# xtool_local_data_path = "./"
+# print(f"正在从本地路径 '{xtool_local_data_path}' 加载文件。请确保 'xTool品牌手册.pdf' 在此目录下。")
+# # 调用 load_from_local_files 函数加载指定路径下的所有文件（包括PDF）。
+# # deepsearcher 会自动使用其内置的 FileLoader（如 PDFLoader）来处理不同类型的文件。
+# load_from_local_files(paths_or_directory=xtool_local_data_path)
+# print("本地文件数据加载完成。")
+
+
 print("\n所有数据加载已完成。知识库已构建完毕。")
 print("现在可以向 xTool Agent 提问了！")
 
 # --- 3. Agent 查询与交互 ---
 while True:
     user_question = input("\n请提出你的 xTool 相关问题 (输入 '退出' 结束): ")
+    #示例问题：1.xTool P2S 有什么独特的功能？；2.xTool F1 Ultra 可以加工哪些材料？；3.F 系列和 P 系列产品之间有什么主要区别？
 
     if user_question.lower() == '退出':
         print("程序结束。感谢使用！")
