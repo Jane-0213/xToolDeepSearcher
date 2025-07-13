@@ -51,7 +51,7 @@ def clean_json_response(raw_response: str) -> dict:
 config = Configuration()
 
 # 配置大语言模型 (LLM)
-config.set_provider_config("llm", "DeepSeek", {"model": "deepseek-chat"})
+config.set_provider_config("llm", "DeepSeek", {"model": "deepseek-reasoner"})
 
 # 配置 Embedding 模型 (将文本转换为向量的模型)
 config.set_provider_config("embedding", "FastEmbedEmbedding", {"model": "intfloat/multilingual-e5-large"})
