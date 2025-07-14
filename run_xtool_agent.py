@@ -12,6 +12,7 @@ from deepsearcher.online_query import query
 # 导入 deepsearcher 库的离线数据加载函数 (本地文件和网页爬取)
 from deepsearcher.offline_loading import load_from_local_files, load_from_website
 
+
 # --- JSON 响应清洗函数 ---
 def clean_json_response(raw_response: str) -> dict:
     """
@@ -62,32 +63,38 @@ config.set_provider_config("vector_db", "Milvus", {
 })
 
 # 配置网页爬虫
-config.set_provider_config("web_crawler", "FireCrawlCrawler", {})
-
+config.set_provider_config("web_crawler", "FireCrawlCrawler", {
+    "enable_javascript": True
+})
 # 初始化 DeepSearcher 的配置
 init_config(config=config)
 
 # --- 2. 数据加载 (构建 xTool 知识库) ---
 
-# 选项 A: 从 xTool 官网加载数据 (推荐，如果 FireCrawl Key 可用)
-print("--- 正在加载 xTool 官网数据 ---")
-xtool_website_urls = [
-    # 商品，可以用P和F系列的商品进行测试
-    # P系列
-    "https://www.xtool.com/products/xtool-p2-55w-co2-laser-cutter",
-    "https://www.xtool.com/products/ultimate-productive-business-duo",
-    "https://www.xtool.com/products/refurbished-xtool-p2-55w-desktop-co2-laser-cutter",
-    # F系列
-    "https://www.xtool.com/products/xtool-f2-ultra-60w-mopa-40w-diode-dual-laser-engraver",
-    "https://www.xtool.com/products/xtool-f1",
-    "https://www.xtool.com/products/xtool-f1-ultra-20w-fiber-diode-dual-laser-engraver",
-    "https://www.xtool.com/products/ultimate-productive-business-duo"
+# 选项 A: 从 xTool 官网加载数据
+print("--- 正在加载 AtomM 博客数据 ---")
+# xtool_website_urls = [
+#     # 商品，可以用P和F系列的商品进行测试
+#     # P系列
+#     "https://www.xtool.com/products/xtool-p2-55w-co2-laser-cutter",
+#     "https://www.xtool.com/products/ultimate-productive-business-duo",
+#     "https://www.xtool.com/products/refurbished-xtool-p2-55w-desktop-co2-laser-cutter",
+#     # F系列
+#     "https://www.xtool.com/products/xtool-f2-ultra-60w-mopa-40w-diode-dual-laser-engraver",
+#     "https://www.xtool.com/products/xtool-f1",
+#     "https://www.xtool.com/products/xtool-f1-ultra-20w-fiber-diode-dual-laser-engraver",
+#     "https://www.xtool.com/products/ultimate-productive-business-duo"
+# ]
+atomm_blog_urls = [
+    "https://www.atomm.com/blog/1966--atomm-ama-is-here-ask-us-anything-and-win-rewards",
+    "https://www.atomm.com/blog/1969-ama-recap-your-questions-answered",
+    "https://www.atomm.com/blog/1963-it-starts-with-an-atomm-the-story-behind-the-transformation"
 ]
 
 if os.getenv("FIRECRAWL_API_KEY"):
-    print(f"检测到 FIRECRAWL_API_KEY。正在使用 FireCrawl 爬取以下网站：{xtool_website_urls}")
-    load_from_website(urls=xtool_website_urls)
-    print("xTool 官网数据加载完成。")
+    print(f"检测到 FIRECRAWL_API_KEY。正在使用 FireCrawl 爬取以下网站：{atomm_blog_urls}")
+    load_from_website(urls=atomm_blog_urls)
+    print("Atomm 官网数据加载完成。")
 else:
     print("警告：未检测到 FIRECRAWL_API_KEY。跳过网站爬取。")
     print("如果您想从官网获取最新信息，请设置 FIRECRAWL_API_KEY。")
@@ -114,8 +121,8 @@ print("现在可以向 xTool Agent 提问了！")
 
 # --- 3. Agent 查询与交互 ---
 while True:
-    user_question = input("\n请提出你的 xTool 相关问题 (输入 '退出' 结束): ")
-    #示例问题：1.xTool P2S 有什么独特的功能？；2.xTool F1 Ultra 可以加工哪些材料？；3.F 系列和 P 系列产品之间有什么主要区别？
+    user_question = input("\n请提出你对 xTool 内容站atomm相关的问题 (输入 '退出' 结束): ")
+    # 示例问题：1.xTool P2S 有什么独特的功能？；2.xTool F1 Ultra 可以加工哪些材料？；3.F 系列和 P 系列产品之间有什么主要区别？
 
     if user_question.lower() == '退出':
         print("程序结束。感谢使用！")
@@ -138,8 +145,10 @@ while True:
                   "评价1": "内容",
                   "评价2": "内容"
                 }}
+                请分析 AtomM 博客评论中的功能建议与用户期待，提取清晰表达的观点。
 
                 问题：{user_question}
+
                 """
 
                 # 执行查询
