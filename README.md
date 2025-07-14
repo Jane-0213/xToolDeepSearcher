@@ -1,24 +1,25 @@
 # xToolDeepSearcher 
 
-一个智能问答系统，聚焦 xTool 产品，支持多轮语义检索、精确功能解析和结构化 JSON 输出。
+一个面向 xTool内容站 [Atomm.com](https://www.atomm.com/) 的智能语义问答系统，聚焦创作者社区内容、用户评论与平台功能提取，支持多轮语义检索、评论解析和结构化 JSON 输出。
 
-> 本项目基于 Milvus 向量数据库 + DeepSearcher 框架 + DeepSeek LLM 打造，可通过本地运行实现对 xTool 官网数据的智能查询。
+> 项目基于 Milvus 向量数据库 + DeepSearcher 框架 + DeepSeek LLM，可本地运行，对 Atomm 平台内容及评论进行深入理解与问答支持。
 
 ---
 
 ## 项目亮点
 
-- ✅ **自动爬取官网信息**：支持通过 Firecrawl 自动抓取 xTool 官网内容，构建私有知识库。
-- ✅ **语义理解 + LLM 推理**：使用 DeepSeek Chat 模型进行自然语言问答。
-- ✅ **本地向量搜索**：使用 Milvus 高效管理和检索文本片段。
-- ✅ **支持 JSON 格式输出**：适用于对结构化结果有强需求的系统对接场景。
-- ✅ **自动清洗和容错机制**：具备 JSON 格式容错恢复能力。
+- ✅ **支持多页面评论爬取**：基于 Firecrawl，可自动抓取 Atomm Blog 页面下的正文和评论内容。
+- ✅ **多轮语义理解 + 评论提炼**：支持对用户评论中的功能建议、使用反馈进行语义抽取。
+- ✅ **LLM 智能问答引擎**：结合 DeepSeek-Chat 模型进行多轮推理，精准回答产品、用户需求等问题。
+- ✅ **本地私有向量检索**：通过 Milvus 管理向量化内容，实现高效文本检索与多轮上下文理解。
+- ✅ **结构化 JSON 输出**：适合用作系统对接、二次分析等结构化任务场景。
+- ✅ **异常容错机制**：支持 JSON 响应异常清洗与恢复，增强鲁棒性。
 
 ---
 ## 展示
-<img width="1839" height="1885" alt="83aa5cd9613ec09af4188f5c659bee8b" src="https://github.com/user-attachments/assets/998ed2d4-13b0-4c6d-a87c-4955b13f41f7" />
-<img width="1311" height="1180" alt="327380292ffbc371c2a45b0e32d89e31" src="https://github.com/user-attachments/assets/22e71f48-1d95-4a10-bb9d-ba4943a97091" />
-<img width="949" height="1681" alt="0c23c98a376bed8e21d483b62f514a0e" src="https://github.com/user-attachments/assets/57597411-4951-4e20-b129-ee17b965de14" />
+<img width="1849" height="1549" alt="d1d2a06c582e13be1a062193ab037b00" src="https://github.com/user-attachments/assets/d21b015d-d1ae-40a6-adda-b2cb00e36fb3" />
+<img width="936" height="1824" alt="0a4ab3b0afee25a9d54dc5835d1c376f" src="https://github.com/user-attachments/assets/891ed01f-a80c-4f6e-a5a1-28fa33a19072" />
+<img width="1840" height="1652" alt="99af0cca3a16fb5e1cdf0dc6674071fe" src="https://github.com/user-attachments/assets/6a17d90f-4ae9-499e-b5b9-db4811d664dd" />
 
 ## 安装与运行
 
@@ -49,17 +50,23 @@ docker-compose up -d
 config.set_provider_config("llm", "DeepSeek", {"model": "deepseek-chat"})
 ```
 
-#### 爬虫配置
+#### 爬虫配置（支持评论抓取）
 如需爬取官网数据，请配置，以fire crawl为例：
 ```python
-config.set_provider_config("web_crawler", "FireCrawlCrawler", {})
+config.set_provider_config("web_crawler", "FireCrawlCrawler", {
+    "enable_javascript": True
+})
 ```
 ### 5.启动问答 Agent
-输入问题如：
-1. xTool P2S 的独特功能是什么？
-2. F 系列和 P 系列产品之间有什么主要区别？
-3. xTool F1 Ultra 可以加工哪些材料？
+运行主程序后，输入你的自然语言问题，例如：
 
+- “用户期待atomm未来有什么功能？”
 
+- “AMA 活动中用户都问了什么？”
+
+- “有没有用户反馈目前平台使用过程中有哪些不方便的地方”
+
+- “有没有用户反馈目前平台使用过程中有哪些不方便的地方？
+- 用户对 AtomM 目前的体验满意吗？有没有正向或负面评价？”
 
 
