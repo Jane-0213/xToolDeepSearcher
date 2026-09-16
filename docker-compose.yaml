@@ -1,0 +1,80 @@
+# docker-compose.yaml - 修正后的版本
+version: '3.8'
+
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.0
+    container_name: milvus-etcd
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=10000
+    volumes:
+      - etcd_data:/etcd
+    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls=http://0.0.0.0:2379 --data-dir=/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - milvus_network
+
+  minio:
+    image: minio/minio:latest # 已更新为 latest
+    container_name: milvus-minio
+    environment:
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+    volumes:
+      - minio_data:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    ports: # <-- 将 MinIO 控制台端口映射放在这里
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - milvus_network
+
+  milvus:
+    image: milvusdb/milvus:latest # 或者你选择的其他版本
+    container_name: milvus-standalone
+    # 【关键修正】删除以下这一行：
+    # command: milvus_standalone
+    command: milvus run standalone
+    environment:
+      - ETCD_ENDPOINTS=etcd:2379
+      - MINIO_ADDRESS=minio:9000
+      - MILVUS_ROOT_PATH=/var/lib/milvus
+      - QUERY_NODE_MAX_TASK_LIMIT=64
+      - DATA_NODE_CHANNEL_SIZE=1000
+      - DATA_COORD_SEGMENT_MAX_ROWS=1000000
+      - ENABLE_DYNAMIC_DATA_COMPACT=true
+      - CPU_SUGGESTION_RATIO=0.8
+    volumes:
+      - milvus_data:/var/lib/milvus
+    ports:
+      - "19530:19530" # Milvus 客户端连接端口
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:19530/healthz" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - etcd
+      - minio
+    networks:
+      - milvus_network
+
+volumes:
+  etcd_data:
+  minio_data:
+  milvus_data:
+
+networks:
+  milvus_network:
+    driver: bridge
